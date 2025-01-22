@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>体感控制器 客户端</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://oss.drea.cc/res/cdn/vue/3.5.13/vue.global.prod.js"></script>
+    <script type="module" src="./assets/main.js"></script>
+    <link rel="stylesheet" href="./assets/main.css">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- 授权成功提示 -->
+            <div class="auth-success" v-if="isAuthPage">
+                <div class="auth-icon">✓</div>
+                <h2>授权成功</h2>
+                <p>客户端已成功连接到服务端</p>
+                <button class="return-btn" @click="handleReturn">
+                    返回服务端
+                </button>
+            </div>
+
+            <!-- 原有内容，在非授权页面时显示 -->
+            <template v-else>
+                <h1>体感控制器 客户端</h1>
+                
+                <!-- 登录表单 -->
+                <div class="login-form" v-show="!isLoggedIn">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input 
+                            type="text" 
+                            v-model="form.username" 
+                            placeholder="请输入用户名"
+                            @keyup.enter="handleLogin" 
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input 
+                            type="password" 
+                            v-model="form.password" 
+                            placeholder="请输入密码"
+                            @keyup.enter="handleLogin" 
+                        />
+                    </div>
+                    <button 
+                        @click="handleLogin" 
+                        :disabled="isLoading"
+                        :class="{ loading: isLoading }">
+                        {{ isLoading ? '登录中...' : '登 录' }}
+                    </button>
+                    <div class="error-message" v-show="error" v-text="error"></div>
+                </div>
+
+                <!-- 系统信息 -->
+                <div class="info-section" v-show="isLoggedIn">
+                    <div class="info-item">
+                        <span class="info-label">登录用户</span>
+                        <span class="info-value" v-text="systemInfo.user?.nickname || systemInfo.user?.username || '未知'"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">客户端状态</span>
+                        <span class="info-value" 
+                              :style="{ 
+                                  fontWeight: 'bold', 
+                                  color: systemInfo.client_status === CLIENT_STATUS.CONNECTED ? '#10b981' : '#ef4444'
+                              }" 
+                              v-text="systemInfo.client_status || CLIENT_STATUS.DISCONNECTED">
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">客户端地址</span>
+                        <a :href="systemInfo.client_url" 
+                           target="_blank" 
+                           class="info-value clickable" 
+                           v-text="systemInfo.client_url || '未知'"></a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">服务端地址</span>
+                        <a :href="systemInfo.api_url" 
+                           target="_blank" 
+                           class="info-value clickable" 
+                           v-text="systemInfo.api_url || '未知'"></a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">最后上报时间</span>
+                        <span class="info-value" v-text="formatTime(systemInfo.last_report_time)"></span>
+                    </div>
+                    <button 
+                        v-if="isViewMode"
+                        class="return-btn" 
+                        style="margin-top: 20px;"
+                        @click="handleReturn">
+                        返回服务端
+                    </button>
+                    <button 
+                        class="logout-btn" 
+                        @click="handleLogout"
+                        :disabled="isLoading"
+                        :class="{ loading: isLoading }">
+                        {{ isLoading ? '退出中...' : '退出登录' }}
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+</body>
+</html> 
