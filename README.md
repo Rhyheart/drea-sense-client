@@ -12,9 +12,9 @@
 
   通过摄像头实时捕捉用户动作，结合云平台的动作配置，将识别到的动作转换为键盘按键输入，从而实现体感游戏控制。
 
-[入门教程](https://docs.drea.cc/sense/primary.md)
+[入门教程](https://docs.drea.cc/sense/primary)
 
-[高级教程](https://docs.drea.cc/sense/high.md)
+[高级教程](https://docs.drea.cc/sense/high)
 
 [平台入口](https://cloud.drea.cc/ai-sense)
 
