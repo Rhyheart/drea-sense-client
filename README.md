@@ -15,8 +15,8 @@ _✨ 一个基于人工智能视觉识别的动作捕捉系统。 ✨_
 ## 概述
 体感控制器是一个基于人工智能视觉识别的动作捕捉系统。通过摄像头实时捕捉用户动作，结合云平台的动作配置，将识别到的动作转换为键盘按键输入，从而实现对游戏的体感控制。
 
-- [入门教程](https://docs.drea.cc/sense/primary)
-- [高级教程](https://docs.drea.cc/sense/high)
+- [入门教程](https://docs.drea.cc/ai-sense/primary)
+- [高级教程](https://docs.drea.cc/ai-sense/high)
 - [平台入口](https://cloud.drea.cc/ai-sense)
 
 ## 背景
