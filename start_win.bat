@@ -1,5 +1,7 @@
 @echo off
-chcp 65001
+:: 设置UTF-8编码
+chcp 65001 >nul
+:: 启用延迟变量扩展
 setlocal EnableDelayedExpansion
 
 :: 设置窗口标题
@@ -48,38 +50,40 @@ echo 正在安装依赖...
 python -m pip install -r requirements.txt
 
 :: 配置用户信息
-set /p username=请输入云平台用户名（默认为 your_username）：
-set /p password=请输入云平台密码（默认为 your_password）：
+set /p "username=请输入云平台用户名（默认为 your_username）："
+set /p "password=请输入云平台密码（默认为 your_password）："
 
 :: 设置默认值
-if "!username!"=="" set username=your_username
-if "!password!"=="" set password=your_password
+if "!username!"=="" set "username=your_username"
+if "!password!"=="" set "password=your_password"
 
 :: 配置输入控制
-set /p enable_input=是否启用输入控制？(y/n，默认为 y)：
+set /p "enable_input=是否启用输入控制？(y/n，默认为 y)："
 if /i "!enable_input!"=="n" (
-    set input_enabled=false
+    set "input_enabled=false"
 ) else (
-    set input_enabled=true
+    set "input_enabled=true"
 )
 
 :: 生成配置文件
-echo # 服务配置> config.yaml
-echo server:>> config.yaml
-echo   port: 5800  # 监听端口>> config.yaml
-echo.>> config.yaml
-echo # 云平台配置>> config.yaml
-echo api:>> config.yaml
-echo   base_url: https://cloud.drea.cc  # 云平台地址>> config.yaml
-echo.>> config.yaml
-echo # 认证配置>> config.yaml
-echo auth:>> config.yaml
-echo   username: !username!  # 云平台用户名>> config.yaml
-echo   password: !password!  # 云平台密码>> config.yaml
-echo.>> config.yaml
-echo # 输入配置>> config.yaml
-echo input:>> config.yaml
-echo   is_enable: !input_enabled!  # 是否启用输入，调试动作的时候可以关闭>> config.yaml
+(
+echo # 服务配置
+echo server:
+echo   port: 5800  # 监听端口
+echo.
+echo # 云平台配置
+echo api:
+echo   base_url: https://cloud.drea.cc  # 云平台地址
+echo.
+echo # 认证配置
+echo auth:
+echo   username: !username!  # 云平台用户名
+echo   password: !password!  # 云平台密码
+echo.
+echo # 输入配置
+echo input:
+echo   is_enable: !input_enabled!  # 是否启用输入，调试动作的时候可以关闭
+) > config.yaml
 
 :: 启动应用程序
 echo.
