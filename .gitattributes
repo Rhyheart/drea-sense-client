@@ -1,0 +1,3 @@
+*.bat text eol=crlf
+*.sh text eol=crlf
+*.yaml text eol=crlf
