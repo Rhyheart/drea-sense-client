@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class ActionKey(BaseModel):
     key: str         # 按键
     duration: Optional[float] = None  # 按键持续时间
+    count: Optional[int] = None  # 按键次数
 
 class Action(BaseModel):
     name: str         # 动作名称

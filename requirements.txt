@@ -5,6 +5,8 @@ pydantic==2.10.1
 PyYAML==6.0.1
 requests==2.31.0
 numpy==1.26.4
-pyautogui==0.9.53
 pycryptodome==3.20.0
 cryptography==42.0.4
+pywin32==306
+keyboard==0.13.5
+mouse==0.7.1
