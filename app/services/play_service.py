@@ -17,24 +17,22 @@ class PlayService:
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=1, 
                                                            thread_name_prefix='key_processor')
         self.future = None
-        self.last_action:Action = None
-        self.last_action_count = 0
-        self.system = platform.system().lower()  # 获取操作系统类型
-        self.sleep_event = threading.Event()  # 添加事件对象
+        self.last_action: Action = Action()
+        self.system_type = platform.system().lower()
+        self.sleep_event = threading.Event()
         self.is_shutdown = False
         self.MOUSE_SENSITIVITY = 20  # 鼠标灵敏度
-        self.is_countinue = False
 
     def processKeys(self, action: Action):
         """处理按键输入"""
         if not action.keys:
             return
         
-        self.is_countinue = True
-        self.last_action = action
-        self.last_action.count = self.last_action_count
+        self.last_action.is_continue = True
+        self.last_action.name = action.name
+        self.last_action.keys = action.keys
 
-        print("触发动作：", action.model_dump_json(), '\n')
+        print("触发动作：", self.last_action.model_dump_json(), '\n')
 
         if not config.input['is_enable']:
             return
@@ -70,12 +68,6 @@ class PlayService:
                     
             except Exception as e:
                 print(f"按键操作失败: {e}")
-
-    def _handle_arrow_key(self, key: str, duration: float):
-        """处理方向键"""
-        keyboard.press(key)
-        self.wait(duration)
-        keyboard.release(key)
         
     def _handle_mouse_action(self, key: str, duration: float):
         """处理鼠标相关操作"""
@@ -100,7 +92,7 @@ class PlayService:
         elif key == "mouse_scroll_down":
             mouse.wheel(delta=-1)
         elif key.startswith("mouse_move_") or key.startswith("mouse_drag_"):
-            if platform.system().lower() != 'windows':#TODO: 其他系统需要另外支持
+            if self.system_type != 'windows': #TODO 其他系统需要另外支持
                 return
 
             is_drag = key.startswith("mouse_drag_")
@@ -151,7 +143,7 @@ class PlayService:
 
     def _handle_special_key(self, key: str, duration: float):
         """处理特殊功能键"""
-        if self.system == 'darwin':  # macOS
+        if self.system_type == 'darwin':  # macOS
             key_mapping = {
                 'win': 'command',
                 'cmd': 'command',
@@ -160,7 +152,7 @@ class PlayService:
                 'scrolllock': 'fn+k',
                 'pause': 'pause'
             }
-        elif self.system == 'windows':  # Windows
+        elif self.system_type == 'windows':  # Windows
             key_mapping = {
                 'win': 'winleft',
                 'cmd': 'winleft',
@@ -189,8 +181,8 @@ class PlayService:
             keyboard.release(mapped_key)
 
     def wait(self, duration: float):
-        while self.is_countinue:
-            self.is_countinue = False
+        while self.last_action.is_continue:
+            self.last_action.is_continue = False
             self.sleep_event.wait(duration)
     
     def processAction(self, action: Action) -> None:
@@ -205,18 +197,18 @@ class PlayService:
             return
 
         # 如果上一个动作和当前动作相同，则增加计数
-        if (self.last_action):
-            if(self.last_action.name == action.name):
-                self.last_action_count += 1
-                if(self.future and not self.future.done()):
-                    self.is_countinue = True
-                    return self.future
-            else:
-                self.last_action_count = 0
+        if(self.last_action.name == action.name):
+            self.last_action.count += 1
+            if(self.future and not self.future.done()):
+                # 如果上一个动作正在执行，则继续保持该动作的执行状态
+                self.last_action.is_continue = True
+                return self.future
+        else:
+            self.last_action.count = 0
         
-        # 如果上一个动作和当前动作不同，则取消上一个动作
+        # 如果上一个动作和当前动作不同，则取消上一个动作的执行状态
         if self.future and not self.future.done():
-            self.is_countinue = False
+            self.last_action.is_continue = False
             self.sleep_event.set()
             self.future.cancel()
         
