@@ -7,10 +7,14 @@ setlocal EnableDelayedExpansion
 :: 设置窗口标题
 title 体感控制器 客户端
 
-:: 检查并安装 Python 环境
-python --version 2>nul | findstr "Python 3.9" >nul
-if %errorlevel% neq 0 (
-    echo Python 3.9 未安装，正在下载...
+:: 设置Python路径
+set "PYTHON_PATH=%~dp0python"
+set "PYTHON_EXE=%PYTHON_PATH%\python.exe"
+set "PIP_EXE=%PYTHON_PATH%\Scripts\pip.exe"
+
+:: 检查当前目录下的Python
+if not exist "%PYTHON_EXE%" (
+    echo Python未在当前目录找到，正在下载...
     
     :: 下载安装程序
     powershell -Command "& {Invoke-WebRequest -Uri 'https://oss.drea.cc/cloud/file/docs/ai-sense/primary/python-3.9.13-amd64.exe' -OutFile 'python-3.9.13.exe'}"
@@ -22,32 +26,29 @@ if %errorlevel% neq 0 (
     )
     
     echo 正在安装 Python 3.9...
-    :: 执行静默安装
-    python-3.9.13.exe /quiet InstallAllUsers=1 PrependPath=1
+    :: 执行安装到当前目录
+    python-3.9.13.exe /quiet InstallAllUsers=0 PrependPath=0 TargetDir="%PYTHON_PATH%"
     
     :: 清理安装文件
     del /f /q python-3.9.13.exe
-    
-    :: 更新环境变量
-    call RefreshEnv.cmd >nul 2>&1
 )
 
 :: 初始化 pip 环境
-python -m pip --version >nul 2>&1
+"%PYTHON_EXE%" -m pip --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo pip 不可用，正在安装...
-    python -m ensurepip --default-pip
+    "%PYTHON_EXE%" -m ensurepip --default-pip
 )
 
 :: 配置 pip 镜像源
-python -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+"%PYTHON_EXE%" -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 :: 更新 pip 版本
-python -m pip install --upgrade pip
+"%PYTHON_EXE%" -m pip install --upgrade pip
 
 :: 安装项目依赖
 echo 正在安装依赖...
-python -m pip install -r requirements.txt
+"%PYTHON_EXE%" -m pip install -r requirements.txt
 
 :: 配置用户信息
 set /p "username=请输入云平台用户名（默认为 your_username）："
@@ -92,6 +93,6 @@ echo           正在启动客户端
 echo ====================================
 echo.
 
-python run.py
+"%PYTHON_EXE%" run.py
 
 pause
