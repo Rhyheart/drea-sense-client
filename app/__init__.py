@@ -138,7 +138,8 @@ def create_app():
         host='0.0.0.0',
         port=config.server['port'],
         log_output=debug,
-        ssl_context=cert_service.init_ssl_cert()
+        ssl_context=cert_service.init_ssl_cert(),
+        allow_unsafe_werkzeug=True
     )
 
     return app

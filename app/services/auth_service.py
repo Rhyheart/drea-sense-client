@@ -25,6 +25,7 @@ class AuthService:
         # 自动登录相关
         self.auto_login_thread = None
         self.auto_login_stop = False
+        self.auto_login_failed = False  # 标记自动登录是否失败
 
         # 上报相关
         self.report_thread = None
@@ -43,8 +44,7 @@ class AuthService:
         self.start()
     
     def start(self):
-
-         # 添加线程引用
+        # 添加线程引用
         self.auto_login_thread = threading.Thread(
             target=self.auto_login_worker,
             daemon=True
@@ -63,11 +63,36 @@ class AuthService:
         while not self.auto_login_stop:  # 使用停止标志
             if not self.access_token:
                 try:
-                    self.auto_login()
+                    if not self.auto_login_failed:
+                        self.auto_login()
+                    else:
+                        # 自动登录失败，等待用户手动输入
+                        time.sleep(1)
                 except Exception as e:
                     print(f"自动登录失败: {str(e)}\n")
+                    self.auto_login_failed = True
+                    self.prompt_login()
                     time.sleep(5)
             time.sleep(10)
+
+    def prompt_login(self):
+        """提示用户输入账号密码"""
+        while True:
+            print("\n请输入账号密码 >>>\n")
+            username = input("用户名: ").strip()
+            password = input("密码: ").strip()
+            print("\n")
+            
+            try:
+                self.login(username, password)
+                config.auth['username'] = username
+                config.auth['password'] = password
+                self.auto_login_failed = False
+                break  # 登录成功，退出循环
+            except Exception as e:
+                print(f"登录失败: 用户名 或 密码 错误\n")
+                self.auto_login_failed = True
+                # 登录失败，继续循环，让用户重新输入
 
     def report_worker(self):
         """上报工作线程"""
@@ -79,8 +104,17 @@ class AuthService:
     # === 认证相关方法 ===
     def auto_login(self):
         """自动登录"""
+        username = config.auth['username']
+        password = config.auth['password']
+        
+        # 如果用户名是your_username或为空，不进行自动登录
+        if not username or username == 'your_username':
+            self.auto_login_failed = True
+            self.prompt_login()
+            return
+            
         print("自动登录中...\n")
-        self.login(config.auth['username'], config.auth['password'])
+        self.login(username, password)
     
     def login(self, username: str, password: str) -> tuple[bool, dict]:
         """登录并获取token"""
